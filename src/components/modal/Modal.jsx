@@ -1,87 +1,85 @@
-import React, { useState } from "react";
-import ReactDOM from "react-dom";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { FaArrowLeft, FaArrowRight, FaTimes, FaCheck } from "react-icons/fa";
-import "react-tabs/style/react-tabs.css";
-import "./Modal.css";
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
+import { FaArrowLeft, FaArrowRight, FaTimes, FaCheck } from 'react-icons/fa';
+import './Modal.css'; // Assuming you have styles here
 
-// Sample data for demonstration
 const timeSlots = [
-  { date: "6. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
-  { date: "7. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
-  { date: "8. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
-  { date: "9. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
-  // ... Add more dates and slots as needed
+  { date: '6. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
+  { date: '7. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
+  { date: '8. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
+  { date: '9. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
+  // Add more dates and slots as needed
 ];
 
 const Modal = ({ isOpen, onClose }) => {
-  const [selectedSlots, setSelectedSlots] = useState([]); // List of selected slots
-  const [lastClickedSlot, setLastClickedSlot] = useState(null); // Store the last clicked slot
-  const [clickCount, setClickCount] = useState(0); // Track the number of clicks
-  const [dateRange, setDateRange] = useState(0); // Manage date range
+  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [lastClickedSlot, setLastClickedSlot] = useState(null);
+  const [clickCount, setClickCount] = useState(0);
+  const [dateRange, setDateRange] = useState(0);
 
-  // Function to move to the next set of dates
-  const nextDates = () => setDateRange((prev) => Math.min(prev + 7, timeSlots.length - 7));
+  const nextDates = () => setDateRange(prev => Math.min(prev + 7, timeSlots.length - 7));
+  const prevDates = () => setDateRange(prev => Math.max(prev - 7, 0));
 
-  // Function to move to the previous set of dates
-  const prevDates = () => setDateRange((prev) => Math.max(prev - 7, 0));
+  const handleSlotClick = (slot) => {
+    setClickCount(prev => {
+      const newCount = prev + 1;
 
-  // Toggle slot selection or select range if Shift is pressed
-const selectSlot = (slot) => {
-  setClickCount((prev) => {
-    const newCount = prev + 1;
-    if (newCount === 1) {
-      // First click: Just store the slot
-      setLastClickedSlot(slot);
-    } else if (newCount === 2) {
-      // Second click: Select range
-      if (lastClickedSlot) {
-        const rangeSlots = getRange(lastClickedSlot, slot);
-        setSelectedSlots((prev) => {
-          const prevSelected = new Set(prev.map(s => `${s.date}-${s.index}`));
-          const newSlots = rangeSlots.filter(
-            (r) => !prevSelected.has(`${r.date}-${r.index}`)
-          );
-          return [...prev, ...newSlots];
-        });
+      const slotAlreadySelected = selectedSlots.some(s => s.date === slot.date && s.index === slot.index);
+
+      if (newCount === 1) {
+        // First click: Toggle selection of the current slot
+        if (slotAlreadySelected) {
+          setSelectedSlots(prev => prev.filter(s => !(s.date === slot.date && s.index === slot.index)));
+        } else {
+          setSelectedSlots([slot]);
+        }
+        setLastClickedSlot(slot);
+      } else if (newCount === 2) {
+        // Second click: Select range from last clicked slot to current slot
+        if (lastClickedSlot) {
+          const rangeSlots = getRangeSlots(lastClickedSlot, slot);
+          setSelectedSlots(prev => {
+            const newSelectedSlots = [
+              ...prev.filter(s => !rangeSlots.some(r => r.date === s.date && r.index === s.index)),
+              ...rangeSlots
+            ];
+            return newSelectedSlots;
+          });
+        }
+        setLastClickedSlot(slot);
+      } else if (newCount === 3) {
+        // Third click: Select only the current slot
+        setSelectedSlots([slot]);
+        setLastClickedSlot(slot);
+        setClickCount(0); // Reset click count
       }
-      setLastClickedSlot(slot);
-    } else if (newCount === 3) {
-      // Third click: Deselect all and only select this slot
-      setSelectedSlots([slot]);
-      setLastClickedSlot(slot);
-      setClickCount(1); // Reset click count for future interactions
-    }
-    return newCount;
-  });
-};
 
+      return newCount;
+    });
+  };
 
-  // Get the range of slots between two slots
-  const getRange = (startSlot, endSlot) => {
-    const startIndex = timeSlots.findIndex((d) => d.date === startSlot.date);
-    const endIndex = timeSlots.findIndex((d) => d.date === endSlot.date);
-
-    const startDateIndex = Math.min(startIndex, endIndex);
-    const endDateIndex = Math.max(startIndex, endIndex);
+  const getRangeSlots = (startSlot, endSlot) => {
+    const startDateIndex = timeSlots.findIndex(d => d.date === startSlot.date);
+    const endDateIndex = timeSlots.findIndex(d => d.date === endSlot.date);
 
     const rangeSlots = [];
 
     for (let i = startDateIndex; i <= endDateIndex; i++) {
-      const slots = timeSlots[i].slots.map((_, slotIndex) => ({
+      const slots = timeSlots[i].slots.map((_, index) => ({
         date: timeSlots[i].date,
-        index: slotIndex,
+        index,
       }));
 
       if (i === startDateIndex) {
-        slots.splice(0, Math.min(startSlot.index, endSlot.index));
+        slots.splice(0, startSlot.index + 1);
       }
       if (i === endDateIndex) {
-        slots.splice(Math.max(startSlot.index, endSlot.index) + 1);
+        slots.splice(endSlot.index + 1);
       }
 
       rangeSlots.push(...slots);
     }
+
     return rangeSlots;
   };
 
@@ -116,94 +114,69 @@ const selectSlot = (slot) => {
         </div>
 
         {/* Tabs */}
-        <Tabs>
-          <TabList className="flex justify-center mb-4">
-            <Tab className="w-1/2 text-center border-b-2 cursor-pointer p-2">
-              Time Slots
-            </Tab>
-            <Tab className="w-1/2 text-center border-b-2 cursor-pointer p-2">
-              Info
-            </Tab>
-          </TabList>
+        <div>
+          <h2 className="text-xl font-bold bg-red-500 text-white p-2 uppercase">
+            Available Time Slots
+          </h2>
 
-          {/* Time Slots Tab */}
-          <TabPanel>
-            <div>
-              <h2 className="text-xl font-bold bg-red-500 text-white p-2 uppercase">
-                Available Time Slots
-              </h2>
-
-              {/* Time Slot Table */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-separate border-spacing-0">
-                  <thead>
-                    <tr>
-                      <th className="border p-2 sticky left-0 bg-white w-1/6">Date</th>
-                      {timeSlots[0].slots.map((slot, index) => (
-                        <th key={index} className="border p-2 text-center">
-                          {index + 1}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {timeSlots.slice(dateRange, dateRange + 7).map((slotData, i) => (
-                      <tr key={i}>
-                        <td className="border p-2 sticky left-0 bg-white w-1/6">
-                          {slotData.date}
-                        </td>
-                        {slotData.slots.map((_, index) => (
-                          <td
-                            key={index}
-                            className="border cursor-pointer"
-                            onClick={() =>
-                              selectSlot({ date: slotData.date, index })
-                            }
-                          >
-                            <div
-                              className={`w-full h-full flex items-center justify-center py-[0.7rem] ${
-                                selectedSlots.some(
-                                  (s) => s.date === slotData.date && s.index === index
-                                )
-                                  ? "bg-gray-300"
-                                  : "bg-white"
-                              } `}
-                            >
-                              {selectedSlots.some(
-                                (s) => s.date === slotData.date && s.index === index
-                              ) && <FaCheck className="text-green-500" />}
-                            </div>
-                          </td>
-                        ))}
-                      </tr>
+          {/* Time Slot Table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-separate border-spacing-0">
+              <thead>
+                <tr>
+                  <th className="border p-2 sticky left-0 bg-white">Date</th>
+                  {timeSlots[0].slots.map((_, index) => (
+                    <th key={index} className="border p-2 text-center">
+                      {index + 1}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {timeSlots.slice(dateRange, dateRange + 7).map((slotData, i) => (
+                  <tr key={i}>
+                    <td className="border p-2 sticky left-0 bg-white">
+                      {slotData.date}
+                    </td>
+                    {slotData.slots.map((_, index) => (
+                      <td
+                        key={index}
+                        className="border cursor-pointer"
+                        onClick={() =>
+                          handleSlotClick({ date: slotData.date, index })
+                        }
+                      >
+                        <div
+                          className={`w-full h-full flex items-center justify-center py-3 ${
+                            selectedSlots.some(
+                              (s) => s.date === slotData.date && s.index === index
+                            )
+                              ? 'bg-gray-300'
+                              : 'bg-white'
+                          }`}
+                        >
+                          {selectedSlots.some(
+                            (s) => s.date === slotData.date && s.index === index
+                          ) && <FaCheck className="text-green-500" />}
+                        </div>
+                      </td>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-              {/* Navigation Arrows */}
-              <div className="flex justify-between mt-4">
-                <button onClick={prevDates} className="text-orange-500">
-                  <FaArrowLeft size={24} />
-                </button>
-                <button onClick={nextDates} className="text-orange-500">
-                  <FaArrowRight size={24} />
-                </button>
-              </div>
-            </div>
-          </TabPanel>
-
-          {/* Info Tab */}
-          <TabPanel>
-            <div>
-              <h2 className="text-xl font-bold">Vehicle Information</h2>
-              <p>
-                This vehicle is perfect for long trips with its spacious seating,
-                advanced features, and fuel efficiency. More details to follow here.
-              </p>
-            </div>
-          </TabPanel>
-        </Tabs>
+          {/* Navigation Arrows */}
+          <div className="flex justify-between mt-4">
+            <button onClick={prevDates} className="text-orange-500">
+              <FaArrowLeft size={24} />
+            </button>
+            <button onClick={nextDates} className="text-orange-500">
+              <FaArrowRight size={24} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>,
     document.body
