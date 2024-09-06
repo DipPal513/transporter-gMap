@@ -15,11 +15,9 @@ function MyGoogleMap() {
       <APIProvider apiKey="AIzaSyCJgOiSJeJlRdoFK_jTK-mNug5b22XPRn4">
         <Map
           center={{ lat: 46.8508, lng: 9.5328 }}
-          zoom={16}
-          options={{
-            zoomControl: true,
-            scrollwheel: true,
-          }}
+          draggableCursor={true}
+          defaultZoom={16}
+         
           mapId={"c4d3f0df86a8b9"}
         >
           <Markers points={Trees} onMarkerClick={openModal} />
@@ -41,7 +39,7 @@ const Markers = ({ points, onMarkerClick }) => {
           key={index}
           onClick={() => onMarkerClick()}
         >
-          <span className="text-lg bg-blue-500 text-white rounded-full w-6 h-6 p-2">
+          <span className="text-lg bg-blue-500 text-white border-4 border-blue-200 rounded-full w-10  h-10 text-center block ">
             {index}
           </span>
         </AdvancedMarker>
