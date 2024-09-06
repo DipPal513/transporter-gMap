@@ -159,13 +159,13 @@ const Modal = ({ isOpen, onClose }) => {
                         {slotData.slots.map((_, index) => (
                           <td
                             key={index}
-                            className="border p-2 cursor-pointer"
+                            className="border  cursor-pointer"
                             onClick={(e) =>
                               selectSlot({ date: slotData.date, index }, e.shiftKey)
                             }
                           >
                             <div
-                              className={`w-full h-full flex items-center justify-center ${
+                              className={`w-full h-full flex items-center justify-center p-3 ${
                                 selectedSlots.some(
                                   (s) => s.date === slotData.date && s.index === index
                                 )
