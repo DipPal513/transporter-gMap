@@ -5,7 +5,7 @@ import VehicleBooking from "./components/booking/Booking";
 import MyGoogleMap from "./components/map/Map";
 
 function App() {
-  return <><MyGoogleMap /> <VehicleBooking /></>;
+  return <><MyGoogleMap /> </>;
 }
 
 export default App;

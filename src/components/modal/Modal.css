@@ -1,0 +1,21 @@
+.modal-container {
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .table-container {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .table-container .w-full {
+    width: 100%;
+  }
+  
+  .table-container .h-full {
+    height: 100%;
+  }
+  

@@ -1,21 +1,203 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import VehicleBooking from '../booking/Booking'; // Adjust the import path as necessary
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import { FaArrowLeft, FaArrowRight, FaTimes, FaCheck } from "react-icons/fa";
+import "react-tabs/style/react-tabs.css";
+import "./Modal.css"; // Ensure you have this CSS file or include styles below
 
-// eslint-disable-next-line react/prop-types
+// Sample data for demonstration
+const timeSlots = [
+  {
+    date: "6. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "7. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "8. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "9. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "10. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "11. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "12. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "13. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "14. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "15. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "16. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+  {
+    date: "17. Sept",
+    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
+  },
+];
+
 const Modal = ({ isOpen, onClose }) => {
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [dateRange, setDateRange] = useState(0);
+
+  // Function to move to the next set of dates
+  const nextDates = () =>
+    setDateRange((prev) => Math.min(prev + 7, timeSlots.length - 7));
+
+  // Function to move to the previous set of dates
+  const prevDates = () => setDateRange((prev) => Math.max(prev - 7, 0));
+
+  // Toggle slot selection
+  const selectSlot = (slot) => {
+    setSelectedSlot(slot);
+  };
+
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative h-[40vh]">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl relative modal-container">
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-red-500 text-xl font-bold"
+          className="absolute top-2 right-2 text-red-500 text-xl font-bold rounded-full shadow-md hover:bg-gray-100 p-2"
         >
-          X
+          <FaTimes />
         </button>
-        <VehicleBooking />
+
+        {/* Image */}
+        <div className="mb-4">
+          <img
+            src="https://via.placeholder.com/1000x400"
+            alt="Vehicle"
+            className="w-full h-48 object-cover"
+          />
+        </div>
+
+        {/* Title and Subtitle */}
+        <div className="text-center mb-4">
+          <h1 className="text-2xl font-bold">Select Your Vehicle</h1>
+          <p className="text-gray-600">
+            Book your time slot and get ready for the ride!
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <Tabs>
+          <TabList className="flex justify-center mb-4">
+            <Tab className="w-1/2 text-center border-b-2 cursor-pointer p-2">
+              Time Slots
+            </Tab>
+            <Tab className="w-1/2 text-center border-b-2 cursor-pointer p-2">
+              Info
+            </Tab>
+          </TabList>
+
+          {/* Time Slots Tab */}
+          <TabPanel>
+            <div>
+              <h2 className="text-xl font-bold bg-red-500 text-white p-2 uppercase">
+                Available Time Slots
+              </h2>
+
+              {/* Time Slot Table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-separate border-spacing-0">
+                  <thead>
+                    <tr>
+                      <th className="border p-2 sticky left-0 bg-white">
+                        Date
+                      </th>
+                      {timeSlots[0].slots.map((slot, index) => (
+                        <th key={index} className="border p-2 text-center">
+                          {index + 1}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {timeSlots
+                      .slice(dateRange, dateRange + 7)
+                      .map((slotData, i) => (
+                        <tr key={i}>
+                          <td className="border p-2 sticky left-0 bg-white">
+                            {slotData.date}
+                          </td>
+                          {slotData.slots.map((_, index) => (
+                            <td
+                              key={index}
+                              className="border p-2 cursor-pointer"
+                              onClick={() =>
+                                selectSlot({ date: slotData.date, index })
+                              }
+                            >
+                              <div
+                                className={`w-full h-full flex items-center justify-center ${
+                                  selectedSlot?.date === slotData.date &&
+                                  selectedSlot.index === index
+                                    ? "bg-gray-300"
+                                    : "bg-white"
+                                } `}
+                              >
+                                {selectedSlot?.date === slotData.date &&
+                                  selectedSlot.index === index && (
+                                    <FaCheck className="text-green-500" />
+                                  )}
+                              </div>
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Navigation Arrows */}
+              <div className="flex justify-between mt-4">
+                <button onClick={prevDates} className="text-orange-500">
+                  <FaArrowLeft size={24} />
+                </button>
+                <button onClick={nextDates} className="text-orange-500">
+                  <FaArrowRight size={24} />
+                </button>
+              </div>
+            </div>
+          </TabPanel>
+
+          {/* Info Tab */}
+          <TabPanel>
+            <div>
+              <h2 className="text-xl font-bold">Vehicle Information</h2>
+              <p>
+                This vehicle is perfect for long trips with its spacious
+                seating, advanced features, and fuel efficiency. More details to
+                follow here.
+              </p>
+            </div>
+            <div className="flex items-center jsutify-between"></div>
+          </TabPanel>
+        </Tabs>
       </div>
     </div>,
     document.body

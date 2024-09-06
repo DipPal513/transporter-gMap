@@ -10,10 +10,7 @@
 // };
 
 const trees = [
-    ["Aspen, quaking", 46.8582, 9.5281],
-    ["Birch, silver", 46.8452, 9.5131],
-    ["Maple, Norway", 46.8602, 9.5371],
-    ["Elm, American", 46.8508, 9.5285],
+   
     ["Spruce, Norway", 46.8478, 9.5235],
     ["Fir, Douglas", 46.8553, 9.5366],
     ["Pine, Scots", 46.8569, 9.5243],
@@ -110,6 +107,16 @@ const trees = [
 
 
 const formatted = trees.map(([name, lat, lng]) => ({
+  name,
+  lat,
+  lng,
+  key: JSON.stringify({ name, lat, lng }),
+}));
+const newData = [ ["Aspen, quaking", 46.8582, 9.5281],
+["Birch, silver", 46.8452, 9.5131],
+["Maple, Norway", 46.8602, 9.5371],
+["Elm, American", 46.8508, 9.5285],]
+export const data2 = newData.map(([name, lat, lng]) => ({
   name,
   lat,
   lng,
