@@ -7,29 +7,18 @@ import "./Modal.css";
 
 // Sample data for demonstration
 const timeSlots = [
-  {
-    date: "6. Sept",
-    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
-  },
-  {
-    date: "7. Sept",
-    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
-  },
-  {
-    date: "8. Sept",
-    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
-  },
-  {
-    date: "9. Sept",
-    slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"],
-  },
+  { date: "6. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
+  { date: "7. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
+  { date: "8. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
+  { date: "9. Sept", slots: ["00:00 - 05:59", "06:00 - 11:59", "12:00 - 17:59", "18:00 - 23:59"] },
   // ... Add more dates and slots as needed
 ];
 
 const Modal = ({ isOpen, onClose }) => {
   const [selectedSlots, setSelectedSlots] = useState([]); // List of selected slots
   const [lastClickedSlot, setLastClickedSlot] = useState(null); // Store the last clicked slot
-  const [dateRange, setDateRange] = useState(0);
+  const [clickCount, setClickCount] = useState(0); // Track the number of clicks
+  const [dateRange, setDateRange] = useState(0); // Manage date range
 
   // Function to move to the next set of dates
   const nextDates = () => setDateRange((prev) => Math.min(prev + 7, timeSlots.length - 7));
@@ -38,28 +27,35 @@ const Modal = ({ isOpen, onClose }) => {
   const prevDates = () => setDateRange((prev) => Math.max(prev - 7, 0));
 
   // Toggle slot selection or select range if Shift is pressed
-  const selectSlot = (slot, shiftKey) => {
-    if (shiftKey && lastClickedSlot) {
-      // Shift-click: Select range between the last clicked and the current one
-      const rangeSlots = getRange(lastClickedSlot, slot);
-      setSelectedSlots((prev) => [
-        ...prev.filter((s) => !rangeSlots.some((r) => r.date === s.date && r.index === s.index)),
-        ...rangeSlots.filter(
-          (r) => !prev.some((s) => s.date === r.date && s.index === r.index)
-        ),
-      ]);
-    } else {
-      // Toggle individual slot selection
-      if (selectedSlots.some((s) => s.date === slot.date && s.index === slot.index)) {
-        setSelectedSlots((prev) =>
-          prev.filter((s) => !(s.date === slot.date && s.index === slot.index))
-        );
-      } else {
-        setSelectedSlots((prev) => [...prev, slot]);
+const selectSlot = (slot) => {
+  setClickCount((prev) => {
+    const newCount = prev + 1;
+    if (newCount === 1) {
+      // First click: Just store the slot
+      setLastClickedSlot(slot);
+    } else if (newCount === 2) {
+      // Second click: Select range
+      if (lastClickedSlot) {
+        const rangeSlots = getRange(lastClickedSlot, slot);
+        setSelectedSlots((prev) => {
+          const prevSelected = new Set(prev.map(s => `${s.date}-${s.index}`));
+          const newSlots = rangeSlots.filter(
+            (r) => !prevSelected.has(`${r.date}-${r.index}`)
+          );
+          return [...prev, ...newSlots];
+        });
       }
+      setLastClickedSlot(slot);
+    } else if (newCount === 3) {
+      // Third click: Deselect all and only select this slot
+      setSelectedSlots([slot]);
+      setLastClickedSlot(slot);
+      setClickCount(1); // Reset click count for future interactions
     }
-    setLastClickedSlot(slot);
-  };
+    return newCount;
+  });
+};
+
 
   // Get the range of slots between two slots
   const getRange = (startSlot, endSlot) => {
@@ -77,10 +73,10 @@ const Modal = ({ isOpen, onClose }) => {
         index: slotIndex,
       }));
 
-      if (i === startIndex) {
+      if (i === startDateIndex) {
         slots.splice(0, Math.min(startSlot.index, endSlot.index));
       }
-      if (i === endIndex) {
+      if (i === endDateIndex) {
         slots.splice(Math.max(startSlot.index, endSlot.index) + 1);
       }
 
@@ -142,7 +138,7 @@ const Modal = ({ isOpen, onClose }) => {
                 <table className="min-w-full border-separate border-spacing-0">
                   <thead>
                     <tr>
-                      <th className="border p-2 sticky left-0 bg-white">Date</th>
+                      <th className="border p-2 sticky left-0 bg-white w-1/6">Date</th>
                       {timeSlots[0].slots.map((slot, index) => (
                         <th key={index} className="border p-2 text-center">
                           {index + 1}
@@ -153,19 +149,19 @@ const Modal = ({ isOpen, onClose }) => {
                   <tbody>
                     {timeSlots.slice(dateRange, dateRange + 7).map((slotData, i) => (
                       <tr key={i}>
-                        <td className="border p-2 sticky left-0 bg-white">
+                        <td className="border p-2 sticky left-0 bg-white w-1/6">
                           {slotData.date}
                         </td>
                         {slotData.slots.map((_, index) => (
                           <td
                             key={index}
-                            className="border  cursor-pointer"
-                            onClick={(e) =>
-                              selectSlot({ date: slotData.date, index }, e.shiftKey)
+                            className="border cursor-pointer"
+                            onClick={() =>
+                              selectSlot({ date: slotData.date, index })
                             }
                           >
                             <div
-                              className={`w-full h-full flex items-center justify-center p-3 ${
+                              className={`w-full h-full flex items-center justify-center py-[0.7rem] ${
                                 selectedSlots.some(
                                   (s) => s.date === slotData.date && s.index === index
                                 )
