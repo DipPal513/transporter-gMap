@@ -10,6 +10,8 @@ function MyGoogleMap() {
   const [carModalIsOpen, setCarModalIsOpen] = useState(false);
   const [treeModalIsOpen, setTreeModalIsOpen] = useState(false); // For tree modal
   const [selectedCar, setSelectedCar] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
+
 
   const openCarModal = (car) => {
     setSelectedCar(car);
@@ -21,8 +23,9 @@ function MyGoogleMap() {
     setSelectedCar(null);
   };
 
-  const openTreeModal = () => {
+  const openTreeModal = (item) => {
     setTreeModalIsOpen(true);
+    setSelectedSlot(item)
   };
 
   const closeTreeModal = () => {
@@ -34,8 +37,8 @@ function MyGoogleMap() {
       <APIProvider apiKey="AIzaSyCJgOiSJeJlRdoFK_jTK-mNug5b22XPRn4">
         <Map
           defaultCenter={{ lat: 46.8508, lng: 9.5328 }}
-          draggableCursor={true}
-          defaultZoom={16}
+          // draggableCursor={true}
+          zoom={16}
           mapId={"c4d3f0df86a8b9"}
         >
           {/* Tree markers */}
@@ -53,7 +56,7 @@ function MyGoogleMap() {
         classNames="modal"
         unmountOnExit
       >
-        <Modal isOpen={treeModalIsOpen} onClose={closeTreeModal} />
+        <Modal isOpen={treeModalIsOpen} slot={selectedSlot} onClose={closeTreeModal} />
       </CSSTransition>
 
       {/* Car Modal with Animation */}

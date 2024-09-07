@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { FaArrowLeft, FaArrowRight, FaTimes, FaCheck } from "react-icons/fa";
@@ -31,7 +33,8 @@ const generateDates = (startDate, numberOfDays) => {
   return dates;
 };
 
-const Modal = ({ isOpen, onClose }) => {
+const Modal = ({ isOpen, onClose,slot:item }) => {
+  console.log("this is slot data",item)
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [lastClickedSlot, setLastClickedSlot] = useState(null);
   const [clickCount, setClickCount] = useState(0);
@@ -167,9 +170,15 @@ const Modal = ({ isOpen, onClose }) => {
             {/* Title and Subtitle */}
             <div className="text-center mb-4">
               <h1 className="text-2xl font-bold">Select Your Vehicle</h1>
+              <h3 className="text-xl">
+                data getting from props: {item.name}
+              </h3>
               <p className="text-gray-600">
                 Book your time slot and get ready for the ride!
               </p>
+              <div className="w-full bg-red-500 py-3">
+                price: {selectedSlots.length * 10}
+              </div>
             </div>
 
             {/* Tabs */}
