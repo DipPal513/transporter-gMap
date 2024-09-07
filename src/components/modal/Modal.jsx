@@ -1,35 +1,58 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { FaArrowLeft, FaArrowRight, FaTimes, FaCheck } from 'react-icons/fa';
 import './Modal.css'; // Assuming you have styles here
 
-const timeSlots = [
-  { date: '6. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
-  { date: '7. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
-  { date: '8. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
-  { date: '9. Sept', slots: ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'] },
-  // Add more dates and slots as needed
-];
+const slots = ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'];
+
+const generateDates = (startDate, numberOfDays) => {
+  const dates = [];
+  const date = new Date(startDate);
+  for (let i = 0; i < numberOfDays; i++) {
+    const currentDate = new Date(date);
+    dates.push({
+      date: currentDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+      }),
+      slots,
+    });
+    date.setDate(date.getDate() + 1);
+  }
+  return dates;
+};
 
 const Modal = ({ isOpen, onClose }) => {
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [lastClickedSlot, setLastClickedSlot] = useState(null);
   const [clickCount, setClickCount] = useState(0);
-  const [dateRange, setDateRange] = useState(0);
+  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const daysToShow = 7;
+  const startDate = new Date();
 
-  const nextDates = () => setDateRange(prev => Math.min(prev + 7, timeSlots.length - 7));
-  const prevDates = () => setDateRange(prev => Math.max(prev - 7, 0));
+  const timeSlots = generateDates(startDate, 30); // Generate 30 days
+
+  const nextDates = () =>
+    setCurrentDayIndex((prev) =>
+      Math.min(prev + daysToShow, timeSlots.length - daysToShow)
+    );
+  const prevDates = () => setCurrentDayIndex((prev) => Math.max(prev - daysToShow, 0));
 
   const handleSlotClick = (slot) => {
-    setClickCount(prev => {
+    setClickCount((prev) => {
       const newCount = prev + 1;
 
-      const slotAlreadySelected = selectedSlots.some(s => s.date === slot.date && s.index === slot.index);
+      const slotAlreadySelected = selectedSlots.some(
+        (s) => s.date === slot.date && s.index === slot.index
+      );
 
       if (newCount === 1) {
         // First click: Toggle selection of the current slot
         if (slotAlreadySelected) {
-          setSelectedSlots(prev => prev.filter(s => !(s.date === slot.date && s.index === slot.index)));
+          setSelectedSlots((prev) =>
+            prev.filter((s) => !(s.date === slot.date && s.index === slot.index))
+          );
         } else {
           setSelectedSlots([slot]);
         }
@@ -38,10 +61,12 @@ const Modal = ({ isOpen, onClose }) => {
         // Second click: Select range from last clicked slot to current slot
         if (lastClickedSlot) {
           const rangeSlots = getRangeSlots(lastClickedSlot, slot);
-          setSelectedSlots(prev => {
+          setSelectedSlots((prev) => {
             const newSelectedSlots = [
-              ...prev.filter(s => !rangeSlots.some(r => r.date === s.date && r.index === s.index)),
-              ...rangeSlots
+              ...prev.filter(
+                (s) => !rangeSlots.some((r) => r.date === s.date && r.index === s.index)
+              ),
+              ...rangeSlots,
             ];
             return newSelectedSlots;
           });
@@ -59,8 +84,8 @@ const Modal = ({ isOpen, onClose }) => {
   };
 
   const getRangeSlots = (startSlot, endSlot) => {
-    const startDateIndex = timeSlots.findIndex(d => d.date === startSlot.date);
-    const endDateIndex = timeSlots.findIndex(d => d.date === endSlot.date);
+    const startDateIndex = timeSlots.findIndex((d) => d.date === startSlot.date);
+    const endDateIndex = timeSlots.findIndex((d) => d.date === endSlot.date);
 
     const rangeSlots = [];
 
@@ -108,9 +133,7 @@ const Modal = ({ isOpen, onClose }) => {
         {/* Title and Subtitle */}
         <div className="text-center mb-4">
           <h1 className="text-2xl font-bold">Select Your Vehicle</h1>
-          <p className="text-gray-600">
-            Book your time slot and get ready for the ride!
-          </p>
+          <p className="text-gray-600">Book your time slot and get ready for the ride!</p>
         </div>
 
         {/* Tabs */}
@@ -125,7 +148,7 @@ const Modal = ({ isOpen, onClose }) => {
               <thead>
                 <tr>
                   <th className="border p-2 sticky left-0 bg-white">Date</th>
-                  {timeSlots[0].slots.map((_, index) => (
+                  {slots.map((_, index) => (
                     <th key={index} className="border p-2 text-center">
                       {index + 1}
                     </th>
@@ -133,18 +156,14 @@ const Modal = ({ isOpen, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {timeSlots.slice(dateRange, dateRange + 7).map((slotData, i) => (
+                {timeSlots.slice(currentDayIndex, currentDayIndex + daysToShow).map((slotData, i) => (
                   <tr key={i}>
-                    <td className="border p-2 sticky left-0 bg-white">
-                      {slotData.date}
-                    </td>
+                    <td className="border p-2 sticky left-0 bg-white">{slotData.date}</td>
                     {slotData.slots.map((_, index) => (
                       <td
                         key={index}
                         className="border cursor-pointer"
-                        onClick={() =>
-                          handleSlotClick({ date: slotData.date, index })
-                        }
+                        onClick={() => handleSlotClick({ date: slotData.date, index })}
                       >
                         <div
                           className={`w-full h-full flex items-center justify-center py-3 ${
@@ -169,10 +188,14 @@ const Modal = ({ isOpen, onClose }) => {
 
           {/* Navigation Arrows */}
           <div className="flex justify-between mt-4">
-            <button onClick={prevDates} className="text-orange-500">
+            <button onClick={prevDates} className="text-orange-500" disabled={currentDayIndex === 0}>
               <FaArrowLeft size={24} />
             </button>
-            <button onClick={nextDates} className="text-orange-500">
+            <button
+              onClick={nextDates}
+              className="text-orange-500"
+              disabled={currentDayIndex + daysToShow >= timeSlots.length}
+            >
               <FaArrowRight size={24} />
             </button>
           </div>
