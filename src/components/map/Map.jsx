@@ -77,7 +77,7 @@ const Markers = ({ points, onMarkerClick }) => {
         <AdvancedMarker
           position={point}
           key={index}
-          onClick={onMarkerClick} // Open tree modal
+          onClick={() => onMarkerClick(point)} // Open tree modal
         >
           <span className="text-lg bg-blue-500 align-middle text-white border-4 border-blue-200 rounded-full w-10 h-10 text-center block">
             {index}
