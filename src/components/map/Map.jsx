@@ -1,18 +1,36 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { AdvancedMarker, APIProvider, Map } from "@vis.gl/react-google-maps";
-import Modal from "../modal/Modal"; 
-import Trees from "../../../public/data/data"; // Your data import
-import { data2 } from "../../../public/data/data";
-function MyGoogleMap() {
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+import CarModal from '../modal/CarModal'; // Import the CarModal component
+import Modal from "../modal/Modal"; // Import the TreeModal component
+import Trees from '../../../public/data/data'; // Your data import for trees
+import { data2 } from '../../../public/data/data'; // Your data import for cars
+import { CSSTransition } from 'react-transition-group'; // Import CSSTransition for animations
 
-  const openModal = () => setModalIsOpen(true);
-  const closeModal = () => setModalIsOpen(false);
+function MyGoogleMap() {
+  const [carModalIsOpen, setCarModalIsOpen] = useState(false);
+  const [treeModalIsOpen, setTreeModalIsOpen] = useState(false); // For tree modal
+  const [selectedCar, setSelectedCar] = useState(null);
+
+  const openCarModal = (car) => {
+    setSelectedCar(car);
+    setCarModalIsOpen(true);
+  };
+
+  const closeCarModal = () => {
+    setCarModalIsOpen(false);
+    setSelectedCar(null);
+  };
+
+  const openTreeModal = () => {
+    setTreeModalIsOpen(true);
+  };
+
+  const closeTreeModal = () => {
+    setTreeModalIsOpen(false);
+  };
 
   return (
-    <div className="h-[60vh] w-full relative">
+    <div className="h-[90vh] w-full relative">
       <APIProvider apiKey="AIzaSyCJgOiSJeJlRdoFK_jTK-mNug5b22XPRn4">
         <Map
           defaultCenter={{ lat: 46.8508, lng: 9.5328 }}
@@ -20,16 +38,38 @@ function MyGoogleMap() {
           defaultZoom={16}
           mapId={"c4d3f0df86a8b9"}
         >
-          <Markers points={Trees} onMarkerClick={() => openModal()} />
+          {/* Tree markers */}
+          <Markers points={Trees} onMarkerClick={openTreeModal} />
+
+          {/* Car markers */}
+          <CarMarkers points={data2} onMarkerClick={openCarModal} />
         </Map>
       </APIProvider>
 
-      {/* Custom modal for displaying point information */}
-      <Modal isOpen={modalIsOpen} onClose={closeModal} />
+      {/* Tree Modal with Animation */}
+      <CSSTransition
+        in={treeModalIsOpen}
+        timeout={300}
+        classNames="modal"
+        unmountOnExit
+      >
+        <Modal isOpen={treeModalIsOpen} onClose={closeTreeModal} />
+      </CSSTransition>
+
+      {/* Car Modal with Animation */}
+      <CSSTransition
+        in={carModalIsOpen}
+        timeout={300}
+        classNames="modal"
+        unmountOnExit
+      >
+        <CarModal isOpen={carModalIsOpen} car={selectedCar} onClose={closeCarModal} />
+      </CSSTransition>
     </div>
   );
 }
 
+// Markers for Trees
 const Markers = ({ points, onMarkerClick }) => {
   return (
     <>
@@ -37,18 +77,26 @@ const Markers = ({ points, onMarkerClick }) => {
         <AdvancedMarker
           position={point}
           key={index}
-          onClick={() => onMarkerClick(point)}
+          onClick={onMarkerClick} // Open tree modal
         >
-          <span className="text-lg bg-blue-500 align-middle text-white border-4 border-blue-200 rounded-full w-10  h-10 text-center block ">
+          <span className="text-lg bg-blue-500 align-middle text-white border-4 border-blue-200 rounded-full w-10 h-10 text-center block">
             {index}
           </span>
         </AdvancedMarker>
       ))}
-      {data2.map((point, index) => (
+    </>
+  );
+};
+
+// Markers for Cars
+const CarMarkers = ({ points, onMarkerClick }) => {
+  return (
+    <>
+      {points.map((point, index) => (
         <AdvancedMarker
           position={point}
           key={index}
-          onClick={() => onMarkerClick()}
+          onClick={() => onMarkerClick(point)} // Open car modal with car data
         >
           <span className="text-xl bg-black text-white rounded-full w-6 h-6 p-2">
             🚗

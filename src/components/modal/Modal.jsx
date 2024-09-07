@@ -1,8 +1,10 @@
-/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { FaArrowLeft, FaArrowRight, FaTimes, FaCheck } from 'react-icons/fa';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import './Modal.css'; // Assuming you have styles here
+import Slider from 'react-slick';
 
 const slots = ['00:00 - 05:59', '06:00 - 11:59', '12:00 - 17:59', '18:00 - 23:59'];
 
@@ -43,13 +45,12 @@ const Modal = ({ isOpen, onClose }) => {
     setClickCount((prev) => {
       const newCount = prev + 1;
 
-      const slotAlreadySelected = selectedSlots.some(
-        (s) => s.date === slot.date && s.index === slot.index
-      );
-
       if (newCount === 1) {
         // First click: Toggle selection of the current slot
-        if (slotAlreadySelected) {
+        const isSelected = selectedSlots.some(
+          (s) => s.date === slot.date && s.index === slot.index
+        );
+        if (isSelected) {
           setSelectedSlots((prev) =>
             prev.filter((s) => !(s.date === slot.date && s.index === slot.index))
           );
@@ -96,7 +97,7 @@ const Modal = ({ isOpen, onClose }) => {
       }));
 
       if (i === startDateIndex) {
-        slots.splice(0, startSlot.index + 1);
+        slots.splice(0, startSlot.index);
       }
       if (i === endDateIndex) {
         slots.splice(endSlot.index + 1);
@@ -106,6 +107,11 @@ const Modal = ({ isOpen, onClose }) => {
     }
 
     return rangeSlots;
+  };
+
+  const settings = {
+    autoPlay: true,
+    dots: false
   };
 
   if (!isOpen) return null;
@@ -122,13 +128,18 @@ const Modal = ({ isOpen, onClose }) => {
         </button>
 
         {/* Image */}
-        <div className="mb-4">
+        <Slider className="mb-4" {...settings}>
           <img
-            src="https://via.placeholder.com/1000x400"
+            src="https://dfkjvbenn7r2b.cloudfront.net/img/truck_mockups/XL.png"
             alt="Vehicle"
-            className="w-full h-48 object-cover"
+            className="w-full h-auto object-cover"
           />
-        </div>
+          <img
+            src="https://dfkjvbenn7r2b.cloudfront.net/img/truck_mockups/XL.png"
+            alt="Vehicle"
+            className="w-full h-auto object-cover"
+          />
+        </Slider>
 
         {/* Title and Subtitle */}
         <div className="text-center mb-4">
